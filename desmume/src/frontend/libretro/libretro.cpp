@@ -759,9 +759,9 @@ static void check_variables(bool first_boot)
           {
               if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_directory) && system_directory)
               {
-                  std::string bios7_loc    = std::string(system_directory) + DIRECTORY_DELIMITER_CHAR + "bios7.bin";
-                  std::string bios9_loc    = std::string(system_directory) + DIRECTORY_DELIMITER_CHAR + "bios9.bin";
-                  std::string firmware_loc = std::string(system_directory) + DIRECTORY_DELIMITER_CHAR + "firmware.bin";
+                  std::string bios7_loc    = std::string(system_directory) + DIRECTORY_DELIMITER_CHAR +"nds"+ DIRECTORY_DELIMITER_CHAR + "bios7.bin";
+                  std::string bios9_loc    = std::string(system_directory) + DIRECTORY_DELIMITER_CHAR +"nds"+ DIRECTORY_DELIMITER_CHAR + "bios9.bin";
+                  std::string firmware_loc = std::string(system_directory) + DIRECTORY_DELIMITER_CHAR +"nds"+ DIRECTORY_DELIMITER_CHAR + "firmware.bin";
 
                   strncpy(CommonSettings.ARM7BIOS, bios7_loc.c_str(), 256);
                   strncpy(CommonSettings.ARM9BIOS, bios9_loc.c_str(), 256);
