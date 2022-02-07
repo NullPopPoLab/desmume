@@ -1015,7 +1015,7 @@ static void check_variables(bool first_boot)
         analog_stick_speed = (float) atof(var.value);
     }
     else
-        analog_stick_speed = 1.0f;
+        analog_stick_speed = 0.5f;
 
     var.key = "desmume_input_rotation";
 
