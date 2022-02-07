@@ -1995,7 +1995,7 @@ void retro_run (void)
 
         have_touch = have_touch || (ret & (1 << RETRO_DEVICE_ID_JOYPAD_R3));
 
-        FramesWithPointer = (analogX || analogY) ? FramesWithPointerBase : FramesWithPointer;
+        FramesWithPointer = (analogX_l || analogY_l || analogX_r || analogY_r) ? FramesWithPointerBase : FramesWithPointer;
    }
 
    if(pointer_mode==POINTER_MOUSE)
