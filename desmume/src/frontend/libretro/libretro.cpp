@@ -1433,7 +1433,7 @@ void retro_set_environment(retro_environment_t cb)
       { "desmume_pointer_mouse", "Mouse/Pointer; enabled|disabled" },
       { "desmume_pointer_type", "Pointer Type; mouse|touch" },
       { "desmume_mouse_speed", "Mouse Speed; 1.0|1.5|2.0|0.01|0.02|0.03|0.04|0.05|0.125|0.25|0.5" },
-      { "desmume_analog_stick_speed", "Analog Stick Speed; 1.0|1.5|2.0|0.01|0.02|0.03|0.04|0.05|0.125|0.25|0.5" },
+      { "desmume_analog_stick_speed", "Analog Stick Speed; 0.5|0.6|0.7|0.8|0.9|1.0|1.2|1.5|0.1|0.2|0.3|0.4" },
       { "desmume_input_rotation", "Pointer Rotation; 0|90|180|270" },
       { "desmume_pointer_device_l", "Pointer Mode for Left Analog; none|emulated|absolute|pressed" },
       { "desmume_pointer_device_r", "Pointer Mode for Right Analog; none|emulated|absolute|pressed" },
@@ -1774,15 +1774,16 @@ void retro_run (void)
             double inv_radius        = 0;
 /*            double angle             = 0;*/
 /*             float final_acceleration = analog_stick_acceleration * (1.0 + (float)analog_stick_acceleration_modifier / 100.0)*/;
-            float speed=analog_stick_speed*(1.0f/analog_stick_acceleration);
+            double speed=analog_stick_speed*(1.0f/analog_stick_acceleration);
+            double ax,ay;
 
             if((pointer_device_l == 1) && (pointer_device_r == 1))
             {
-                analogX_l = speed*l_analog_x_ret;
-                analogY_l = speed*l_analog_y_ret;
+                analogX_l = l_analog_x_ret;
+                analogY_l = l_analog_y_ret;
                 rotate_input(analogX_l, analogY_l, input_rotation);
-                analogX_r = speed*r_analog_x_ret;
-                analogY_r = speed*r_analog_y_ret;
+                analogX_r = r_analog_x_ret;
+                analogY_r = r_analog_y_ret;
                 rotate_input(analogX_r, analogY_r, input_rotation);
 
                 double radius_l = sqrt(analogX_l * analogX_l + analogY_l * analogY_l);
@@ -1805,23 +1806,24 @@ void retro_run (void)
             }
             else if(pointer_device_l == 1)
             {
-                analogX = speed*l_analog_x_ret;
-                analogY = speed*l_analog_y_ret;
+                analogX = l_analog_x_ret;
+                analogY = l_analog_y_ret;
                 rotate_input(analogX, analogY, input_rotation);
                 radius = sqrt(analogX * analogX + analogY * analogY);
 /*                angle = atan2(analogY, analogX);*/
             }
             else
             {
-                analogX = speed*r_analog_x_ret;
-                analogY = speed*r_analog_y_ret;
+                analogX = r_analog_x_ret;
+                analogY = r_analog_y_ret;
                 rotate_input(analogX, analogY, input_rotation);
                 radius = sqrt(analogX * analogX + analogY * analogY);
 /*                angle = atan2(analogY, analogX);*/
             }
+            radius*=speed;
             inv_radius=1.0f/radius;
-            analogX*=inv_radius;
-            analogY*=inv_radius;
+            ax=inv_radius*analogX;
+            ay=inv_radius*analogY;
 
             // Convert cartesian coordinate analog stick to polar coordinates
             double max = (float)0x8000/analog_stick_acceleration;
@@ -1834,8 +1836,8 @@ void retro_run (void)
                 radius = (radius - (float)analog_stick_deadzone*max/100)*((float)max/(max - (float)analog_stick_deadzone*max/100));
 
                 // Convert back to cartesian coordinates
-                analogXpointer = (int32_t)round(radius * analogX);
-                analogYpointer = (int32_t)round(radius * analogY);
+                analogXpointer = (int32_t)round(radius * ax);
+                analogYpointer = (int32_t)round(radius * ay);
 
                 TouchX = Saturate(0, (GPU_LR_FRAMEBUFFER_NATIVE_WIDTH-1), TouchX + analogXpointer);
                 TouchY = Saturate(0, (GPU_LR_FRAMEBUFFER_NATIVE_HEIGHT-1), TouchY + analogYpointer);
