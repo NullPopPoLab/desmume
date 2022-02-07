@@ -67,6 +67,12 @@ enum {
    LAYOUTS_MAX = 8
 };
 
+enum {
+	POINTER_TOUCH = 0,
+	POINTER_MOUSE = 1,
+	POINTER_STICK = 2,
+};
+
 retro_log_printf_t log_cb = NULL;
 static retro_video_refresh_t video_cb = NULL;
 static retro_input_poll_t poll_cb = NULL;
@@ -80,13 +86,15 @@ static bool libretro_supports_bitmasks = false;
 volatile bool execute = 0;
 
 static int delay_timer = 0;
-static bool mouse_enable = false;
+static int pointer_mode = 0;
+/*static bool mouse_enable = false;*/
 static double mouse_speed= 1.0;
 static double mouse_x_delta = 0.0;
 static double mouse_y_delta = 0.0;
-static int pointer_device_l = 0;
-static int pointer_device_r = 0;
-static float analog_stick_speed=1.0f;
+/*static int pointer_device_l = 0;*/
+/*static int pointer_device_r = 0;*/
+static float left_stick_speed=0.5f;
+static float right_stick_speed=0.2f;
 static int analog_stick_deadzone;
 static int analog_stick_acceleration = 2048;
 /*static int analog_stick_acceleration_modifier = 0;*/
@@ -943,6 +951,21 @@ static void check_variables(bool first_boot)
             hybrid_layout_scale = hybrid_layout_ratio;
     }
 
+    var.key = "desmume_pointer_mode";
+
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+    {
+        if (!strcmp(var.value, "mouse"))
+            pointer_mode = 1;
+        else if(!strcmp(var.value, "stick"))
+            pointer_mode = 2;
+        else
+            pointer_mode=0;
+    }
+    else
+        pointer_mode=0;
+
+#if 0
     var.key = "desmume_pointer_mouse";
 
     if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -986,6 +1009,7 @@ static void check_variables(bool first_boot)
     }
     else
         pointer_device_r=0;
+#endif
 
     var.key = "desmume_pointer_device_deadzone";
 
@@ -1008,14 +1032,23 @@ static void check_variables(bool first_boot)
     else
         mouse_speed = 1.0f;
 
-   var.key = "desmume_analog_stick_speed";
+   var.key = "desmume_left_stick_speed";
 
     if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
     {
-        analog_stick_speed = (float) atof(var.value);
+        left_stick_speed = (float) atof(var.value);
     }
     else
-        analog_stick_speed = 0.5f;
+        left_stick_speed = 0.5f;
+
+   var.key = "desmume_right_stick_speed";
+
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+    {
+        left_right_speed = (float) atof(var.value);
+    }
+    else
+        left_right_speed = 0.2f;
 
     var.key = "desmume_input_rotation";
 
@@ -1394,6 +1427,18 @@ void retro_set_environment(retro_environment_t cb)
       { "desmume_use_external_bios", "Use External BIOS/Firmware (restart); disabled|enabled" },
       { "desmume_boot_into_bios", "Boot Into BIOS (interpreter and external bios only); disabled|enabled"},
       { "desmume_load_to_memory", "Load Game Into Memory (restart); disabled|enabled" },
+      { "desmume_pointer_mouse", "Mouse/Pointer; enabled|disabled" },
+      { "desmume_pointer_type", "Pointer Type; mouse|touch" },
+      { "desmume_mouse_speed", "Mouse Speed; 1.0|1.5|2.0|0.01|0.02|0.03|0.04|0.05|0.125|0.25|0.5" },
+      { "desmume_left_stick_speed", "Analog Stick Speed; 0.5|0.6|0.7|0.8|0.9|1.0|1.2|1.5|0.1|0.2|0.3|0.4" },
+      { "desmume_right_stick_speed", "Analog Stick Speed; 0.2|0.3|0.4|0.5|0.6|0.7|0.8|0.9|1.0|1.2|1.5|0.1" },
+      { "desmume_input_rotation", "Pointer Rotation; 0|90|180|270" },
+/*      { "desmume_pointer_device_l", "Pointer Mode for Left Analog; none|emulated|absolute|pressed" },*/
+/*      { "desmume_pointer_device_r", "Pointer Mode for Right Analog; none|emulated|absolute|pressed" },*/
+      { "desmume_pointer_device_deadzone", "Emulated Pointer Deadzone Percent; 15|20|25|30|35|0|5|10" },
+/*      { "desmume_pointer_device_acceleration_mod", "Emulated Pointer Acceleration Modifier Percent; 0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|64|65|66|67|68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100" },*/
+      { "desmume_pointer_stylus_pressure", "Emulated Stylus Pressure Modifier Percent; 50|51|52|53|54|55|56|57|58|59|60|61|62|63|64|65|66|67|68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100|0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|" },
+      { "desmume_pointer_colour", "Pointer Colour; white|black|red|blue|yellow"},
       { "desmume_num_cores", "CPU Cores; 1|2|3|4" },
 #ifdef HAVE_JIT
 #if defined(IOS) || defined(ANDROID)
@@ -1430,17 +1475,6 @@ void retro_set_environment(retro_environment_t cb)
       { "desmume_hybrid_layout_scale", "Hybrid Layout: Scale So Small Screen is 1:1px; disabled|enabled" },
       { "desmume_hybrid_showboth_screens", "Hybrid Layout: Show Both Screens; enabled|disabled"},
       { "desmume_hybrid_cursor_always_smallscreen", "Hybrid Layout: Cursor Always on Small Screen; enabled|disabled"},
-      { "desmume_pointer_mouse", "Mouse/Pointer; enabled|disabled" },
-      { "desmume_pointer_type", "Pointer Type; mouse|touch" },
-      { "desmume_mouse_speed", "Mouse Speed; 1.0|1.5|2.0|0.01|0.02|0.03|0.04|0.05|0.125|0.25|0.5" },
-      { "desmume_analog_stick_speed", "Analog Stick Speed; 0.5|0.6|0.7|0.8|0.9|1.0|1.2|1.5|0.1|0.2|0.3|0.4" },
-      { "desmume_input_rotation", "Pointer Rotation; 0|90|180|270" },
-      { "desmume_pointer_device_l", "Pointer Mode for Left Analog; none|emulated|absolute|pressed" },
-      { "desmume_pointer_device_r", "Pointer Mode for Right Analog; none|emulated|absolute|pressed" },
-      { "desmume_pointer_device_deadzone", "Emulated Pointer Deadzone Percent; 15|20|25|30|35|0|5|10" },
-/*      { "desmume_pointer_device_acceleration_mod", "Emulated Pointer Acceleration Modifier Percent; 0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|64|65|66|67|68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100" },*/
-      { "desmume_pointer_stylus_pressure", "Emulated Stylus Pressure Modifier Percent; 50|51|52|53|54|55|56|57|58|59|60|61|62|63|64|65|66|67|68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100|0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|" },
-      { "desmume_pointer_colour", "Pointer Colour; white|black|red|blue|yellow"},
       { "desmume_mic_mode", "Microphone Button Noise Type; pattern|random" },
       { 0, 0 }
    };
@@ -1755,80 +1789,57 @@ void retro_run (void)
    r_analog_x_ret = input_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X);
    r_analog_y_ret = input_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y);
 
-   if(pointer_device_l != 0 || pointer_device_r != 0)  // 1=emulated pointer, 2=absolute pointer, 3=absolute pointer constantly pressed
+   if(pointer_mode==POINTER_STICK)  // 1=emulated pointer, 2=absolute pointer, 3=absolute pointer constantly pressed
    {
         int16_t analogX_l = 0;
         int16_t analogY_l = 0;
         int16_t analogX_r = 0;
         int16_t analogY_r = 0;
-        int16_t analogX = 0;
-        int16_t analogY = 0;
         int16_t analogXpointer = 0;
         int16_t analogYpointer = 0;
 
-        //emulated pointer on one or both sticks
-        //just prioritize the stick that has a higher radius
-        if((pointer_device_l == 1) || (pointer_device_r == 1))
-        {
-            double radius            = 0;
+            double radius_l            = 0;
+            double radius_r            = 0;
 /*            double angle             = 0;*/
 /*             float final_acceleration = analog_stick_acceleration * (1.0 + (float)analog_stick_acceleration_modifier / 100.0)*/;
-            double speed=analog_stick_speed/(double)analog_stick_acceleration;
-            static double frac_x=0.0,frac_y=0.0;
+            double speed_l=left_stick_speed/(double)analog_stick_acceleration;
+            double speed_r=right_stick_speed/(double)analog_stick_acceleration;
+            static double frac_lx=0.0,frac_ly=0.0;
+            static double frac_rx=0.0,frac_ry=0.0;
 
-            if((pointer_device_l == 1) && (pointer_device_r == 1))
-            {
                 analogX_l = l_analog_x_ret;
                 analogY_l = l_analog_y_ret;
+                radius_l = sqrt((double)analogX_l * (double)analogX_l + (double)analogY_l * (double)analogY_l);
+/*                angle = atan2(analogY, analogX);*/
+
                 analogX_r = r_analog_x_ret;
                 analogY_r = r_analog_y_ret;
-
-                double radius_l2 = (double)analogX_l * (double)analogX_l + (double)analogY_l * (double)analogY_l;
-                double radius_r2 = (double)analogX_r * (double)analogX_r + (double)analogY_r * (double)analogY_r;
-
-                if(radius_l2 > radius_r2)
-                {
-                    radius = sqrt(radius_l2);
-/*                    angle = atan2(analogY_l, analogX_l);*/
-                    analogX = analogX_l;
-                    analogY = analogY_l;
-                }
-                else
-                {
-                    radius = sqrt(radius_r2);
-/*                    angle = atan2(analogY_r, analogX_r);*/
-                    analogX = analogX_r;
-                    analogY = analogY_r;
-                }
-            }
-            else if(pointer_device_l == 1)
-            {
-                analogX = l_analog_x_ret;
-                analogY = l_analog_y_ret;
-                radius = sqrt((double)analogX * (double)analogX + (double)analogY * (double)analogY);
+                radius_r = sqrt((double)analogX_r * (double)analogX_r + (double)analogY_r * (double)analogY_r);
 /*                angle = atan2(analogY, analogX);*/
-            }
-            else
-            {
-                analogX = r_analog_x_ret;
-                analogY = r_analog_y_ret;
-                radius = sqrt((double)analogX * (double)analogX + (double)analogY * (double)analogY);
-/*                angle = atan2(analogY, analogX);*/
-            }
-            rotate_input(analogX, analogY, input_rotation);
-            radius*=speed;
-            frac_x+=speed*analogX;
-            frac_y+=speed*analogY;
-            analogX=frac_x;
-            analogY=frac_y;
-            frac_x-=analogX;
-            frac_y-=analogY;
+
+            rotate_input(analogX_l, analogY_l, input_rotation);
+            rotate_input(analogX_r, analogY_r, input_rotation);
+            radius_l*=speed_l;
+            radius_r*=speed_r;
+            frac_lx+=speed_l*analogX_l;
+            frac_ly+=speed_l*analogY_l;
+            frac_rx+=speed_r*analogX_r;
+            frac_ry+=speed_r*analogY_r;
+            analogX_l=frac_lx;
+            analogY_l=frac_ly;
+            analogX_r=frac_rx;
+            analogY_r=frac_ry;
+            frac_lx-=analogX_l;
+            frac_ly-=analogY_l;
+            frac_rx-=analogX_r;
+            frac_ry-=analogY_r;
 
             // Convert cartesian coordinate analog stick to polar coordinates
             double max = (float)0x8000/analog_stick_acceleration;
 
             //log_cb(RETRO_LOG_DEBUG, "%d %d.\n", analogX,analogY);
             //log_cb(RETRO_LOG_DEBUG, "%d %d.\n", radius,analog_stick_deadzone);
+            double radius=radius_l+radius_r;
             if(radius > (float)analog_stick_deadzone*max/100)
             {
                 // Re-scale analog stick range to negate deadzone (makes slow movements possible)
@@ -1836,17 +1847,14 @@ void retro_run (void)
                 double dr=radius2/radius;
 
                 // Convert back to cartesian coordinates
-                analogXpointer = (int32_t)round(dr*analogX);
-                analogYpointer = (int32_t)round(dr*analogY);
+                analogXpointer = (int32_t)round(dr*(analogX_l+analogX_r));
+                analogYpointer = (int32_t)round(dr*(analogY_l+analogY_r));
 
                 TouchX = Saturate(0, (GPU_LR_FRAMEBUFFER_NATIVE_WIDTH-1), TouchX + analogXpointer);
                 TouchY = Saturate(0, (GPU_LR_FRAMEBUFFER_NATIVE_HEIGHT-1), TouchY + analogYpointer);
-
-
             }
 
-        }
-
+#if 0
         //absolute pointer -- doesn't run if emulated pointer > deadzone
         if(((pointer_device_l == 2) || (pointer_device_l == 3) || (pointer_device_r == 2) || (pointer_device_r == 3)) && !(analogXpointer || analogYpointer))
         {
@@ -1980,6 +1988,7 @@ void retro_run (void)
                 }
             }
         }
+#endif
 
         //log_cb(RETRO_LOG_DEBUG, "%d %d.\n", GPU_LR_FRAMEBUFFER_NATIVE_WIDTH,GPU_LR_FRAMEBUFFER_NATIVE_HEIGHT);
         //log_cb(RETRO_LOG_DEBUG, "%d %d.\n", analogX,analogY);
@@ -1987,10 +1996,9 @@ void retro_run (void)
         have_touch = have_touch || (ret & (1 << RETRO_DEVICE_ID_JOYPAD_R3));
 
         FramesWithPointer = (analogX || analogY) ? FramesWithPointerBase : FramesWithPointer;
-
    }
 
-   if(mouse_enable)
+   if(pointer_mode==POINTER_MOUSE)
    {
       // TOUCH: Mouse
       if(!touchEnabled)
