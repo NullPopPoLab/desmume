@@ -1775,7 +1775,7 @@ void retro_run (void)
 /*            double angle             = 0;*/
 /*             float final_acceleration = analog_stick_acceleration * (1.0 + (float)analog_stick_acceleration_modifier / 100.0)*/;
             double speed=analog_stick_speed*(1.0f/analog_stick_acceleration);
-            static double frac_x=0.0,flac_y=0.0;
+            static double frac_x=0.0,frac_y=0.0;
 
             if((pointer_device_l == 1) && (pointer_device_r == 1))
             {
