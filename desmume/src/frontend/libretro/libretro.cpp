@@ -1045,10 +1045,10 @@ static void check_variables(bool first_boot)
 
     if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
     {
-        left_right_speed = (float) atof(var.value);
+        right_stick_speed = (float) atof(var.value);
     }
     else
-        left_right_speed = 0.2f;
+        right_stick_speed = 0.2f;
 
     var.key = "desmume_input_rotation";
 
