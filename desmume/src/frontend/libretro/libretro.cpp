@@ -86,6 +86,7 @@ static double mouse_x_delta = 0.0;
 static double mouse_y_delta = 0.0;
 static int pointer_device_l = 0;
 static int pointer_device_r = 0;
+static float analog_stick_speed=1.0f;
 static int analog_stick_deadzone;
 static int analog_stick_acceleration = 2048;
 /*static int analog_stick_acceleration_modifier = 0;*/
@@ -1007,6 +1008,15 @@ static void check_variables(bool first_boot)
     else
         mouse_speed = 1.0f;
 
+   var.key = "desmume_analog_stick_speed";
+
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+    {
+        analog_stick_speed = (float) atof(var.value);
+    }
+    else
+        analog_stick_speed = 1.0f;
+
     var.key = "desmume_input_rotation";
 
     if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -1423,11 +1433,12 @@ void retro_set_environment(retro_environment_t cb)
       { "desmume_pointer_mouse", "Mouse/Pointer; enabled|disabled" },
       { "desmume_pointer_type", "Pointer Type; mouse|touch" },
       { "desmume_mouse_speed", "Mouse Speed; 1.0|1.5|2.0|0.01|0.02|0.03|0.04|0.05|0.125|0.25|0.5" },
+      { "desmume_analog_stick_speed", "Analog Stick Speed; 1.0|1.5|2.0|0.01|0.02|0.03|0.04|0.05|0.125|0.25|0.5" },
       { "desmume_input_rotation", "Pointer Rotation; 0|90|180|270" },
       { "desmume_pointer_device_l", "Pointer Mode for Left Analog; none|emulated|absolute|pressed" },
       { "desmume_pointer_device_r", "Pointer Mode for Right Analog; none|emulated|absolute|pressed" },
       { "desmume_pointer_device_deadzone", "Emulated Pointer Deadzone Percent; 15|20|25|30|35|0|5|10" },
-      { "desmume_pointer_device_acceleration_mod", "Emulated Pointer Acceleration Modifier Percent; 0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|64|65|66|67|68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100" },
+/*      { "desmume_pointer_device_acceleration_mod", "Emulated Pointer Acceleration Modifier Percent; 0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|64|65|66|67|68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100" },*/
       { "desmume_pointer_stylus_pressure", "Emulated Stylus Pressure Modifier Percent; 50|51|52|53|54|55|56|57|58|59|60|61|62|63|64|65|66|67|68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100|0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|" },
       { "desmume_pointer_colour", "Pointer Colour; white|black|red|blue|yellow"},
       { "desmume_mic_mode", "Microphone Button Noise Type; pattern|random" },
@@ -1761,15 +1772,15 @@ void retro_run (void)
         {
             double radius            = 0;
             double angle             = 0;
-            float final_acceleration = analog_stick_acceleration /* * (1.0 + (float)analog_stick_acceleration_modifier / 100.0)*/;
+/*             float final_acceleration = analog_stick_acceleration * (1.0 + (float)analog_stick_acceleration_modifier / 100.0)*/;
 
             if((pointer_device_l == 1) && (pointer_device_r == 1))
             {
-                analogX_l = l_analog_x_ret /  final_acceleration;
-                analogY_l = l_analog_y_ret / final_acceleration;
+                analogX_l = l_analog_x_ret * analog_stick_speed;
+                analogY_l = l_analog_y_ret * analog_stick_speed;
                 rotate_input(analogX_l, analogY_l, input_rotation);
-                analogX_r = r_analog_x_ret /  final_acceleration;
-                analogY_r = r_analog_y_ret / final_acceleration;
+                analogX_r = r_analog_x_ret * analog_stick_speed;
+                analogY_r = r_analog_y_ret * analog_stick_speed;
                 rotate_input(analogX_r, analogY_r, input_rotation);
 
                 double radius_l = sqrt(analogX_l * analogX_l + analogY_l * analogY_l);
@@ -1793,16 +1804,16 @@ void retro_run (void)
 
             else if(pointer_device_l == 1)
             {
-                analogX = l_analog_x_ret / final_acceleration;
-                analogY = l_analog_y_ret / final_acceleration;
+                analogX = l_analog_x_ret * analog_stick_speed;
+                analogY = l_analog_y_ret * analog_stick_speed;
                 rotate_input(analogX, analogY, input_rotation);
                 radius = sqrt(analogX * analogX + analogY * analogY);
                 angle = atan2(analogY, analogX);
             }
             else
             {
-                analogX = r_analog_x_ret / final_acceleration;
-                analogY = r_analog_y_ret / final_acceleration;
+                analogX = r_analog_x_ret * analog_stick_speed;
+                analogY = r_analog_y_ret * analog_stick_speed;
                 rotate_input(analogX, analogY, input_rotation);
                 radius = sqrt(analogX * analogX + analogY * analogY);
                 angle = atan2(analogY, analogX);
