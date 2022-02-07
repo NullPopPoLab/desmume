@@ -88,7 +88,7 @@ static int pointer_device_l = 0;
 static int pointer_device_r = 0;
 static int analog_stick_deadzone;
 static int analog_stick_acceleration = 2048;
-static int analog_stick_acceleration_modifier = 0;
+/*static int analog_stick_acceleration_modifier = 0;*/
 static int nds_screen_gap = 0;
 static bool opengl_mode = false;
 static int hybrid_layout_scale = 1;
@@ -1197,12 +1197,14 @@ static void check_variables(bool first_boot)
    else
       CommonSettings.micMode = TCommonSettings::InternalNoise;
 
+#if 0
    var.key = "desmume_pointer_device_acceleration_mod";
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
       analog_stick_acceleration_modifier = atoi(var.value);
    else
       analog_stick_acceleration_modifier = 0;
+#endif
 
    var.key = "desmume_pointer_stylus_pressure";
 
@@ -1759,7 +1761,7 @@ void retro_run (void)
         {
             double radius            = 0;
             double angle             = 0;
-            float final_acceleration = analog_stick_acceleration * (1.0 + (float)analog_stick_acceleration_modifier / 100.0);
+            float final_acceleration = analog_stick_acceleration /* * (1.0 + (float)analog_stick_acceleration_modifier / 100.0)*/;
 
             if((pointer_device_l == 1) && (pointer_device_r == 1))
             {
