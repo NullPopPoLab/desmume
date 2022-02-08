@@ -1031,24 +1031,24 @@ static void check_variables(bool first_boot)
 
     if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
     {
-        left_stick_speed = (float) atof(var.value);
+        left_stick_speed = atof(var.value);
     }
     else
-        left_stick_speed = 0.5f;
+        left_stick_speed = 0.8;
 
    var.key = "desmume_right_stick_speed";
 
     if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
     {
-        right_stick_speed = (float) atof(var.value);
+        right_stick_speed = atof(var.value);
     }
     else
-        right_stick_speed = 0.2f;
+        right_stick_speed = 0.1;
 
     var.key = "desmume_stick_deadzone";
 
     if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-      analog_stick_deadzone = (float)(atoi(var.value))/100.0f;
+      analog_stick_deadzone = (double)atoi(var.value)/100.0;
 
     var.key = "desmume_input_rotation";
 
@@ -1430,8 +1430,8 @@ void retro_set_environment(retro_environment_t cb)
       { "desmume_pointer_mouse", "Mouse/Pointer; enabled|disabled" },
       { "desmume_pointer_type", "Pointer Type; mouse|touch" },
       { "desmume_mouse_speed", "Mouse Speed; 1.0|1.5|2.0|0.01|0.02|0.03|0.04|0.05|0.125|0.25|0.5" },
-      { "desmume_left_stick_speed", "Left Stick Speed; 0.8|0.9|1.0|1.2|1.5|2.0|0.1|0.2|0.3|0.4|0.5|0.6|0.7" },
-      { "desmume_right_stick_speed", "Right Stick Speed; 0.1|0.2|0.3|0.4|0.5|0.6|0.7|0.8|0.9|1.0|1.2|1.5|2.0" },
+      { "desmume_left_stick_speed", "Left Stick Speed; 0.8|0.9|1.0|1.2|1.5|2.0|0.03|0.05|0.07|0.1|0.2|0.3|0.4|0.5|0.6|0.7" },
+      { "desmume_right_stick_speed", "Right Stick Speed; 0.1|0.2|0.3|0.4|0.5|0.6|0.7|0.8|0.9|1.0|1.2|1.5|2.0|0.03|0.05|0.07" },
       { "desmume_stick_deadzone", "Stick Deadzone Percent; 10|15|20|25|30|35|40|45|50|0|1|2|5" },
       { "desmume_input_rotation", "Pointer Rotation; 0|90|180|270" },
 /*      { "desmume_pointer_device_l", "Pointer Mode for Left Analog; none|emulated|absolute|pressed" },*/
