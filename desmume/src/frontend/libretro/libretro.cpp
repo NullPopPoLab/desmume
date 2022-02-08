@@ -1011,11 +1011,6 @@ static void check_variables(bool first_boot)
         pointer_device_r=0;
 #endif
 
-    var.key = "desmume_pointer_device_deadzone";
-
-    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-      analog_stick_deadzone = (int)(atoi(var.value));
-
     var.key = "desmume_pointer_type";
 
     if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -1049,6 +1044,11 @@ static void check_variables(bool first_boot)
     }
     else
         right_stick_speed = 0.2f;
+
+    var.key = "desmume_stick_deadzone";
+
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+      analog_stick_deadzone = (int)(atoi(var.value));
 
     var.key = "desmume_input_rotation";
 
@@ -1430,8 +1430,8 @@ void retro_set_environment(retro_environment_t cb)
       { "desmume_pointer_mouse", "Mouse/Pointer; enabled|disabled" },
       { "desmume_pointer_type", "Pointer Type; mouse|touch" },
       { "desmume_mouse_speed", "Mouse Speed; 1.0|1.5|2.0|0.01|0.02|0.03|0.04|0.05|0.125|0.25|0.5" },
-      { "desmume_left_stick_speed", "Analog Stick Speed; 0.5|0.6|0.7|0.8|0.9|1.0|1.2|1.5|0.1|0.2|0.3|0.4" },
-      { "desmume_right_stick_speed", "Analog Stick Speed; 0.2|0.3|0.4|0.5|0.6|0.7|0.8|0.9|1.0|1.2|1.5|0.1" },
+      { "desmume_left_stick_speed", "Left Stick Speed; 0.8|0.9|1.0|1.2|1.5|2.0|0.1|0.2|0.3|0.4|0.5|0.6|0.7" },
+      { "desmume_right_stick_speed", "Right Stick Speed; 0.1|0.2|0.3|0.4|0.5|0.6|0.7|0.8|0.9|1.0|1.2|1.5|2.0" },
       { "desmume_input_rotation", "Pointer Rotation; 0|90|180|270" },
 /*      { "desmume_pointer_device_l", "Pointer Mode for Left Analog; none|emulated|absolute|pressed" },*/
 /*      { "desmume_pointer_device_r", "Pointer Mode for Right Analog; none|emulated|absolute|pressed" },*/
@@ -1789,7 +1789,7 @@ void retro_run (void)
    r_analog_x_ret = input_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X);
    r_analog_y_ret = input_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y);
 
-   if(pointer_mode==POINTER_STICK)  // 1=emulated pointer, 2=absolute pointer, 3=absolute pointer constantly pressed
+   if(pointer_mode==POINTER_STICK)
    {
         int16_t analogX_l = 0;
         int16_t analogY_l = 0;
@@ -1798,29 +1798,19 @@ void retro_run (void)
         int16_t analogXpointer = 0;
         int16_t analogYpointer = 0;
 
-            double radius_l            = 0;
-            double radius_r            = 0;
-/*            double angle             = 0;*/
-/*             float final_acceleration = analog_stick_acceleration * (1.0 + (float)analog_stick_acceleration_modifier / 100.0)*/;
             double speed_l=left_stick_speed/(double)analog_stick_acceleration;
             double speed_r=right_stick_speed/(double)analog_stick_acceleration;
             static double frac_lx=0.0,frac_ly=0.0;
             static double frac_rx=0.0,frac_ry=0.0;
 
-                analogX_l = l_analog_x_ret;
-                analogY_l = l_analog_y_ret;
-                radius_l = sqrt((double)analogX_l * (double)analogX_l + (double)analogY_l * (double)analogY_l);
-/*                angle = atan2(analogY, analogX);*/
+            analogX_l = l_analog_x_ret;
+            analogY_l = l_analog_y_ret;
 
-                analogX_r = r_analog_x_ret;
-                analogY_r = r_analog_y_ret;
-                radius_r = sqrt((double)analogX_r * (double)analogX_r + (double)analogY_r * (double)analogY_r);
-/*                angle = atan2(analogY, analogX);*/
+            analogX_r = r_analog_x_ret;
+            analogY_r = r_analog_y_ret;
 
             rotate_input(analogX_l, analogY_l, input_rotation);
             rotate_input(analogX_r, analogY_r, input_rotation);
-            radius_l*=speed_l;
-            radius_r*=speed_r;
             frac_lx+=speed_l*analogX_l;
             frac_ly+=speed_l*analogY_l;
             frac_rx+=speed_r*analogX_r;
@@ -1839,16 +1829,21 @@ void retro_run (void)
 
             //log_cb(RETRO_LOG_DEBUG, "%d %d.\n", analogX,analogY);
             //log_cb(RETRO_LOG_DEBUG, "%d %d.\n", radius,analog_stick_deadzone);
-            double radius=radius_l+radius_r;
-            if(radius > (float)analog_stick_deadzone*max/100)
+            double ax=analogX_l+analogX_r;
+            double ay=analogY_l+analogY_r;
+            double radius2=ax*ax+ay*ay;
+            double max1=(float)analog_stick_deadzone*max/100.0;
+            double max2=max1*max1;
+            if(radius2 > max2)
             {
                 // Re-scale analog stick range to negate deadzone (makes slow movements possible)
-                double radius2 = (radius - (float)analog_stick_deadzone*max/100)*((float)max/(max - (float)analog_stick_deadzone*max/100));
-                double dr=radius2/radius;
+                double radius=sqrt(radius2);
+                double radius3 = radius - max1*(max/(max - max1));
+                double dr=radius3/radius;
 
                 // Convert back to cartesian coordinates
-                analogXpointer = (int32_t)round(dr*(analogX_l+analogX_r));
-                analogYpointer = (int32_t)round(dr*(analogY_l+analogY_r));
+                analogXpointer = (int32_t)round(dr*ax);
+                analogYpointer = (int32_t)round(dr*ay);
 
                 TouchX = Saturate(0, (GPU_LR_FRAMEBUFFER_NATIVE_WIDTH-1), TouchX + analogXpointer);
                 TouchY = Saturate(0, (GPU_LR_FRAMEBUFFER_NATIVE_HEIGHT-1), TouchY + analogYpointer);
