@@ -1813,8 +1813,8 @@ void retro_run (void)
 
             //log_cb(RETRO_LOG_DEBUG, "%d %d.\n", analogX,analogY);
             //log_cb(RETRO_LOG_DEBUG, "%d %d.\n", radius,analog_stick_deadzone);
-            double ax=analogX_l*speed_l+analogX_r*speed_r;
-            double ay=analogY_l*speed_l+analogY_r*speed_r;
+            double ax=speed_l*analogX_l+speed_r*analogX_r;
+            double ay=speed_l*analogY_l+speed_r*analogY_r;
             double radius2=ax*ax+ay*ay;
             double max1=analog_stick_deadzone*max;
             double max2=max1*max1;
@@ -1826,19 +1826,24 @@ void retro_run (void)
                 double dr=radius3/radius;
 
                 // Convert back to cartesian coordinates
-                ax = round(dr*ax);
-                ay = round(dr*ay);
+                ax *= dr;
+                ay *= dr;
+            }
+            else{
+			    ax=ay=0;	
             }
 
             cursor_x+=ax;
             cursor_y+=ay;
+            double width=GPU_LR_FRAMEBUFFER_NATIVE_WIDTH-1;
+            double height=GPU_LR_FRAMEBUFFER_NATIVE_HEIGHT-1;
             if (cursor_x < 0) cursor_x = 0;
-            else if (cursor_x > GPU_LR_FRAMEBUFFER_NATIVE_WIDTH - 1) cursor_x = GPU_LR_FRAMEBUFFER_NATIVE_WIDTH - 1;
+            else if (cursor_x > width) cursor_x = width;
             if (cursor_y < 0) cursor_y = 0;
-            else if (cursor_y > GPU_LR_FRAMEBUFFER_NATIVE_HEIGHT - 1) cursor_y = GPU_LR_FRAMEBUFFER_NATIVE_HEIGHT - 1;
+            else if (cursor_y > height) cursor_y = height;
 
-            TouchX = round(cursor_x);
-            TouchY = round(cursor_y);
+            TouchX = cursor_x;
+            TouchY = cursor_y;
 
 #if 0
         //absolute pointer -- doesn't run if emulated pointer > deadzone
