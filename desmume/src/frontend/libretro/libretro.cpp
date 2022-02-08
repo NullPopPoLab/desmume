@@ -93,8 +93,8 @@ static double mouse_x_delta = 0.0;
 static double mouse_y_delta = 0.0;
 /*static int pointer_device_l = 0;*/
 /*static int pointer_device_r = 0;*/
-static double left_stick_speed=0.5;
-static double right_stick_speed=0.2;
+static double left_stick_speed=0.8;
+static double right_stick_speed=0.1;
 static double analog_stick_deadzone=0.1;
 static double inv_analog_stick_acceleration = 1.0/2048.0;
 /*static int analog_stick_acceleration_modifier = 0;*/
@@ -951,7 +951,7 @@ static void check_variables(bool first_boot)
             hybrid_layout_scale = hybrid_layout_ratio;
     }
 
-    var.key = "desmume_pointer_mode";
+    var.key = "desmume_pointer_type";
 
     if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
     {
@@ -1428,7 +1428,7 @@ void retro_set_environment(retro_environment_t cb)
       { "desmume_boot_into_bios", "Boot Into BIOS (interpreter and external bios only); disabled|enabled"},
       { "desmume_load_to_memory", "Load Game Into Memory (restart); disabled|enabled" },
       { "desmume_pointer_mouse", "Mouse/Pointer; enabled|disabled" },
-      { "desmume_pointer_type", "Pointer Type; mouse|touch" },
+      { "desmume_pointer_type", "Pointer Type; stick|touch|mouse" },
       { "desmume_mouse_speed", "Mouse Speed; 1.0|1.5|2.0|0.01|0.02|0.03|0.04|0.05|0.125|0.25|0.5" },
       { "desmume_left_stick_speed", "Left Stick Speed; 0.8|0.9|1.0|1.2|1.5|2.0|0.03|0.05|0.07|0.1|0.2|0.3|0.4|0.5|0.6|0.7" },
       { "desmume_right_stick_speed", "Right Stick Speed; 0.1|0.2|0.3|0.4|0.5|0.6|0.7|0.8|0.9|1.0|1.2|1.5|2.0|0.03|0.05|0.07" },
