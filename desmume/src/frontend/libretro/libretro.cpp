@@ -1791,46 +1791,30 @@ void retro_run (void)
 
    if(pointer_mode==POINTER_STICK)
    {
+        static float cursor_x=0.0f,cursor_y=0.0f;
         int16_t analogX_l = 0;
         int16_t analogY_l = 0;
         int16_t analogX_r = 0;
         int16_t analogY_r = 0;
-        int16_t analogXpointer = 0;
-        int16_t analogYpointer = 0;
 
             double speed_l=left_stick_speed*inv_analog_stick_acceleration;
             double speed_r=right_stick_speed*inv_analog_stick_acceleration;
-            static double frac_lx=0.0,frac_ly=0.0;
-            static double frac_rx=0.0,frac_ry=0.0;
 
             analogX_l = l_analog_x_ret;
             analogY_l = l_analog_y_ret;
-
             analogX_r = r_analog_x_ret;
             analogY_r = r_analog_y_ret;
 
             rotate_input(analogX_l, analogY_l, input_rotation);
             rotate_input(analogX_r, analogY_r, input_rotation);
-            frac_lx+=speed_l*analogX_l;
-            frac_ly+=speed_l*analogY_l;
-            frac_rx+=speed_r*analogX_r;
-            frac_ry+=speed_r*analogY_r;
-            analogX_l=frac_lx;
-            analogY_l=frac_ly;
-            analogX_r=frac_rx;
-            analogY_r=frac_ry;
-            frac_lx-=analogX_l;
-            frac_ly-=analogY_l;
-            frac_rx-=analogX_r;
-            frac_ry-=analogY_r;
 
             // Convert cartesian coordinate analog stick to polar coordinates
             double max = (float)0x8000*inv_analog_stick_acceleration;
 
             //log_cb(RETRO_LOG_DEBUG, "%d %d.\n", analogX,analogY);
             //log_cb(RETRO_LOG_DEBUG, "%d %d.\n", radius,analog_stick_deadzone);
-            double ax=analogX_l+analogX_r;
-            double ay=analogY_l+analogY_r;
+            double ax=speed_l*analogX_l+speed_r*analogX_r;
+            double ay=speed_l*analogY_l+speed_r*analogY_r;
             double radius2=ax*ax+ay*ay;
             double max1=analog_stick_deadzone*max;
             double max2=max1*max1;
@@ -1842,12 +1826,24 @@ void retro_run (void)
                 double dr=radius3/radius;
 
                 // Convert back to cartesian coordinates
-                analogXpointer = (int32_t)round(dr*ax);
-                analogYpointer = (int32_t)round(dr*ay);
-
-                TouchX = Saturate(0, (GPU_LR_FRAMEBUFFER_NATIVE_WIDTH-1), TouchX + analogXpointer);
-                TouchY = Saturate(0, (GPU_LR_FRAMEBUFFER_NATIVE_HEIGHT-1), TouchY + analogYpointer);
+                ax *= dr;
+                ay *= dr;
             }
+            else{
+			    ax=ay=0;	
+            }
+
+            cursor_x+=ax;
+            cursor_y+=ay;
+            double width=GPU_LR_FRAMEBUFFER_NATIVE_WIDTH-1;
+            double height=GPU_LR_FRAMEBUFFER_NATIVE_HEIGHT-1;
+            if (cursor_x < 0) cursor_x = 0;
+            else if (cursor_x > width) cursor_x = width;
+            if (cursor_y < 0) cursor_y = 0;
+            else if (cursor_y > height) cursor_y = height;
+
+            TouchX = cursor_x;
+            TouchY = cursor_y;
 
 #if 0
         //absolute pointer -- doesn't run if emulated pointer > deadzone
