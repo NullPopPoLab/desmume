@@ -1481,6 +1481,18 @@ void retro_set_environment(retro_environment_t cb)
 
    environ_cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void*)values);
 
+   static const struct retro_controller_description controllers[] = {
+      { "Nintendo DS", RETRO_DEVICE_ANALOG },
+      { NULL, 0 },
+   };
+
+   static const struct retro_controller_info ports[] = {
+      { controllers, 1 },
+      { NULL, 0 },
+   };
+
+   cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports);
+
    vfs_iface_info.required_interface_version = FILESTREAM_REQUIRED_VFS_VERSION;
    vfs_iface_info.iface                      = NULL;
    if (environ_cb(RETRO_ENVIRONMENT_GET_VFS_INTERFACE, &vfs_iface_info))
