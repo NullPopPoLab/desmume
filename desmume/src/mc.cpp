@@ -232,6 +232,10 @@ BackupDevice::BackupDevice()
 	char buf[MAX_PATH] = {0};
 	memset(buf, 0, MAX_PATH);
 	path.getpathnoext(path.BATTERY, buf);
+	strncat(buf,"/",sizeof(buf));
+	path_mkdir(buf);
+	strncat(buf,"desmume_save",sizeof(buf));
+
 	_fileName = std::string(buf) + ".dsv";
 
 	MCLOG("MC: %s\n", _fileName.c_str());
