@@ -1623,7 +1623,7 @@ void retro_run (void)
    int16_t l_analog_y_ret        = 0;
    int16_t r_analog_x_ret        = 0;
    int16_t r_analog_y_ret        = 0;
-   int16_t ret                   = 0;
+   int32_t ret                   = 0;
    bool updated                  = false;
    bool have_touch               = false;
 
@@ -1678,7 +1678,7 @@ void retro_run (void)
    else
    {
       unsigned i;
-      for (i = 0; i < RETRO_DEVICE_ID_JOYPAD_R3+1; i++)
+      for (i = 0; i < RETRO_DEVICE_ID_JOYPAD_BUTTON_MAX; i++)
       {
          if (input_cb(0, RETRO_DEVICE_JOYPAD, 0, i))
             ret |= (1 << i);
