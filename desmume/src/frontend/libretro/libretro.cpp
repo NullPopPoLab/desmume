@@ -26,6 +26,8 @@
 #include "OGLRender.h"
 #include "OGLRender_3_2.h"
 
+#define CUSTOM_VERSION "+NC41"
+
 static GLuint pbo = 0;
 static GLuint fbo = 0;
 static GLuint tex = 0;
@@ -516,9 +518,9 @@ void retro_get_system_info(struct retro_system_info *info)
 {
    info->library_name = "DeSmuME";
 #ifdef GIT_VERSION
-   info->library_version = "git" GIT_VERSION;
+   info->library_version = "git" GIT_VERSION CUSTOM_VERSION;
 #else
-   info->library_version = "SVN";
+   info->library_version = "SVN" CUSTOM_VERSION;
 #endif
    info->valid_extensions = "nds|ids|bin";
    info->need_fullpath = true;
