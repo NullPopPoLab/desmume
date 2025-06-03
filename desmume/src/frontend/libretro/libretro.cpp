@@ -1999,10 +1999,10 @@ void retro_run (void)
          (ret & (1 << RETRO_DEVICE_ID_JOYPAD_L      )),
          (ret & (1 << RETRO_DEVICE_ID_JOYPAD_R      )),
          0, // debug
-         (ret & (1 << RETRO_DEVICE_ID_JOYPAD_L2     )) //Lid
+         (ret & (1 << RETRO_DEVICE_ID_JOYPAD_MENU   )) //Lid
          );
 
-   if (ret & (1 << RETRO_DEVICE_ID_JOYPAD_L3))
+   if (ret & (1 << RETRO_DEVICE_ID_JOYPAD_L2))
       NDS_setMic(true);
    else
       NDS_setMic(false);
@@ -2010,7 +2010,7 @@ void retro_run (void)
    // BUTTONS
    NDS_beginProcessingInput();
 
-   if((ret & (1 << RETRO_DEVICE_ID_JOYPAD_R3)) && delay_timer == 0)
+   if((ret & (1 << RETRO_DEVICE_ID_JOYPAD_G8)) && delay_timer == 0)
    {
       switch (current_layout)
       {
@@ -2425,11 +2425,11 @@ struct retro_input_descriptor desc[] = {
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,      "B" },
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,      "A" },
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L,      "L" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2,     "Lid Close/Open" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3,     "Make Microphone Noise" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MENU,   "Lid Close/Open" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2,     "Make Microphone Noise" },
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R,      "R" },
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2,     "Tap Stylus" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3,     "Quick Screen Switch" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_G8,     "Quick Screen Switch" },
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START,  "Start" },
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT,  "Select" },
 
