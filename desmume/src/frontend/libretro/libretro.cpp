@@ -26,7 +26,7 @@
 #include "OGLRender.h"
 #include "OGLRender_3_2.h"
 
-#define CUSTOM_VERSION "+NC41"
+#define CUSTOM_VERSION "+NCA41"
 
 static GLuint pbo = 0;
 static GLuint fbo = 0;
