@@ -1846,7 +1846,7 @@ void retro_run (void)
    // BUTTONS
    NDS_beginProcessingInput();
 
-   if((ret & (1 << RETRO_DEVICE_ID_JOYPAD_G8)) && delay_timer == 0)
+   if((ret & (1 << RETRO_DEVICE_ID_JOYPAD_G6)) && delay_timer == 0)
    {
       switch (current_layout)
       {
@@ -2265,7 +2265,7 @@ struct retro_input_descriptor desc[] = {
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2,     "Make Microphone Noise" },
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R,      "R" },
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2,     "Tap Stylus" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_G8,     "Quick Screen Switch" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_G6,     "Quick Screen Switch" },
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START,  "Start" },
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT,  "Select" },
 
